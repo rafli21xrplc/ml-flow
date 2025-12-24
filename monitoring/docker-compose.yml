@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # 1. Container Aplikasi ML + Monitoring Agent
+  ml-app:
+    build: .
+    container_name: ml-app
+    ports:
+      - "5000:5000" # Port API
+      - "8000:8000" # Port Metrics
+    volumes:
+      # Mounting folder model dari Sprint 3 ke dalam container
+      # Ganti '../MLFlow/model_lokal_output' sesuai lokasi asli folder model Anda relative terhadap folder 'monitoring'
+      - ../model_lokal_output:/app/model
+
+  # 2. Container Prometheus (Database Metrics)
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  # 3. Container Grafana (Dashboard Visual)
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Password login grafana

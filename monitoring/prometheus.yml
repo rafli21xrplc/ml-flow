@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s # Ambil data setiap 5 detik (Real-time)
+
+scrape_configs:
+  - job_name: 'ml-model-monitoring'
+    static_configs:
+      - targets: ['ml-app:8000'] # Mengarah ke container aplikasi port metrics
