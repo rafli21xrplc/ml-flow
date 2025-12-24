@@ -1,0 +1,63 @@
+name: Data Preprocessing Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'namadataset_raw/**'
+      - 'preprocessing/automate_surya.py'
+
+jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+    
+    # Memberikan izin kepada bot untuk melakukan push (write) ke repository
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Checkout Repository (Mengambil kode terbaru)
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup Python Environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. Install Dependencies
+      # Menginstall library yang dibutuhkan oleh automate_surya.py
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy scikit-learn
+
+      # 4. Jalankan Script Preprocessing
+      # --input: Lokasi data mentah (sesuai struktur Kriteria 1)
+      # --output: Folder tujuan penyimpanan hasil clean
+      - name: Run Preprocessing Script
+        run: |
+          python preprocessing/automate_surya.py \
+            --input "namadataset_raw/heart_disease.csv" \
+            --output "preprocessing/namadataset_preprocessing"
+
+      # 5. Commit dan Push Hasil (Mengembalikan Dataset Terbaru)
+      - name: Commit and Push Processed Data
+        run: |
+          # Konfigurasi identitas bot git
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
+          # Tambahkan file hasil preprocessing ke staging area
+          # Pastikan path ini sesuai dengan output script Anda
+          git add preprocessing/namadataset_preprocessing/train.csv
+          git add preprocessing/namadataset_preprocessing/test.csv
+          
+          # Commit perubahan (jika ada)
+          # "|| echo..." mencegah error jika tidak ada perubahan data
+          git commit -m "Auto-update processed dataset by GitHub Actions" || echo "No changes to commit"
+          
+          # Push kembali ke repository
+          git push
